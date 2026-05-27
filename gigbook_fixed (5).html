@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Adam David — Gigbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --coral: #D85A30; --coral-dk: #993C1D; --coral-lt: #FAECE7;
+    --purple: #534AB7; --purple-dk: #3C3489; --purple-lt: #EEEDFE;
+    --teal: #1D9E75; --teal-dk: #0F6E56; --teal-lt: #E1F5EE;
+    --amber: #BA7517; --amber-lt: #FAEEDA;
+    --gray: #888780; --gray-lt: #F1EFE8; --gray-dk: #444441;
+    --bg: #0d0d0d; --bg2: #161616; --bg3: #1e1e1e; --bg4: #252525;
+    --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+    --text: #f0ece4; --text2: #a09c94; --text3: #5a5752;
+    --radius: 10px; --radius-lg: 14px;
+    --font: 'DM Sans', sans-serif; --font-display: 'DM Serif Display', serif;
+  }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.6; }
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+  /* layout */
+  #root { display: flex; min-height: 100vh; }
+  .sidebar { width: 220px; min-width: 220px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 24px 0; position: fixed; top: 0; left: 0; height: 100vh; z-index: 10; }
+  .main { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+  .topbar { height: 60px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; gap: 12px; background: var(--bg); position: sticky; top: 0; z-index: 9; }
+  .content { padding: 28px; flex: 1; }
+  /* sidebar branding */
+  .brand { padding: 0 20px 28px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .brand-icon { width: 34px; height: 34px; background: var(--coral); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .brand-name { font-family: var(--font-display); font-size: 20px; color: var(--text); }
+  /* nav */
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 20px; cursor: pointer; font-size: 13px; color: var(--text2); border-left: 2px solid transparent; transition: all .15s; user-select: none; }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { color: var(--coral); border-left-color: var(--coral); background: rgba(216,90,48,0.07); font-weight: 500; }
+  .nav-icon { width: 16px; text-align: center; font-size: 15px; }
+  .nav-section { font-size: 10px; font-weight: 600; letter-spacing: 1px; color: var(--text3); padding: 16px 20px 6px; text-transform: uppercase; }
+  /* gcal status in sidebar */
+  .gcal-status { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border); }
+  .gcal-pill { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: var(--radius); background: var(--bg3); border: 1px solid var(--border); cursor: pointer; font-size: 12px; color: var(--text2); transition: all .15s; }
+  .gcal-pill:hover { border-color: var(--border2); color: var(--text); }
+  .gcal-pill.connected { background: rgba(29,158,117,0.1); border-color: rgba(29,158,117,0.3); color: var(--teal); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gray); flex-shrink: 0; }
+  .dot.on { background: var(--teal); box-shadow: 0 0 6px rgba(29,158,117,0.6); }
+  /* buttons */
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; border-radius: var(--radius); border: none; font-family: var(--font); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; }
+  .btn-primary { background: var(--coral); color: #fff; }
+  .btn-primary:hover { background: var(--coral-dk); }
+  .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border2); }
+  .btn-ghost:hover { background: var(--bg3); color: var(--text); }
+  .btn-danger { background: rgba(226,75,74,0.12); color: #E24B4A; border: 1px solid rgba(226,75,74,0.2); }
+  .btn-danger:hover { background: rgba(226,75,74,0.2); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  /* badges */
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+  .badge.public { background: var(--coral-lt); color: var(--coral-dk); }
+  .badge.private { background: var(--purple-lt); color: var(--purple-dk); }
+  .badge.rehearsal { background: var(--teal-lt); color: var(--teal-dk); }
+  .badge.other { background: var(--gray-lt); color: var(--gray-dk); }
+  /* stats row */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 20px; }
+  .stat-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .7px; margin-bottom: 6px; }
+  .stat-val { font-size: 28px; font-weight: 300; font-family: var(--font-display); }
+  .stat-val.coral { color: var(--coral); } .stat-val.purple { color: var(--purple); } .stat-val.teal { color: var(--teal); }
+  .stat-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  /* calendar grid */
+  .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .cal-dayhead { background: var(--bg2); padding: 8px 4px; text-align: center; font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: .5px; text-transform: uppercase; }
+  .cal-cell { background: var(--bg2); min-height: 96px; padding: 7px; cursor: pointer; transition: background .12s; }
+  .cal-cell:hover { background: var(--bg3); }
+  .cal-cell.other-month { background: var(--bg); }
+  .cal-cell.other-month .day-num { color: var(--text3); }
+  .cal-cell.today .day-num { background: var(--coral); color: #fff; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+  .day-num { font-size: 12px; font-weight: 500; color: var(--text2); margin-bottom: 4px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+  .gig-chip { font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; font-weight: 500; }
+  .gig-chip.public { background: rgba(216,90,48,0.2); color: #f0a080; }
+  .gig-chip.private { background: rgba(83,74,183,0.25); color: #a09ae0; }
+  .gig-chip.rehearsal { background: rgba(29,158,117,0.2); color: #60c4a0; }
+  .gig-chip.other { background: var(--bg4); color: var(--text2); }
+  .more-chip { font-size: 10px; color: var(--text3); padding: 1px 6px; }
+  /* list view */
+  .gig-row { display: flex; align-items: flex-start; gap: 14px; padding: 14px 18px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px; cursor: pointer; transition: border-color .15s; }
+  .gig-row:hover { border-color: var(--border2); }
+  .gig-date-box { text-align: center; min-width: 40px; }
+  .gig-date-mon { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; }
+  .gig-date-day { font-size: 22px; font-weight: 300; font-family: var(--font-display); color: var(--text); line-height: 1; }
+  .gig-row-info { flex: 1; }
+  .gig-row-name { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+  .gig-row-venue { font-size: 12px; color: var(--text2); margin-bottom: 6px; }
+  .gig-row-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .gig-pay { font-size: 12px; color: var(--amber); font-weight: 500; }
+  .sync-badge { font-size: 10px; color: var(--teal); display: flex; align-items: center; gap: 4px; }
+  /* modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(4px); }
+  .modal { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius-lg); padding: 28px; width: 440px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 60px rgba(0,0,0,0.5); }
+  .modal-title { font-family: var(--font-display); font-size: 22px; color: var(--text); margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+  .modal-close { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 18px; padding: 4px; border-radius: 6px; transition: color .15s; }
+  .modal-close:hover { color: var(--text); }
+  /* forms */
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .7px; margin-bottom: 5px; display: block; }
+  .form-input { width: 100%; padding: 9px 12px; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); font-family: var(--font); font-size: 13px; color: var(--text); outline: none; transition: border-color .15s; }
+  .form-input:focus { border-color: var(--coral); }
+  .form-input::placeholder { color: var(--text3); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  textarea.form-input { min-height: 70px; resize: vertical; }
+  select.form-input { cursor: pointer; }
+  .type-opts { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; }
+  .type-opt { padding: 7px 4px; border: 1px solid var(--border2); border-radius: var(--radius); text-align: center; font-size: 11px; font-weight: 500; cursor: pointer; color: var(--text2); transition: all .15s; }
+  .type-opt:hover { border-color: var(--border2); color: var(--text); }
+  .type-opt.sel-public { background: rgba(216,90,48,0.15); border-color: var(--coral); color: #f0a080; }
+  .type-opt.sel-private { background: rgba(83,74,183,0.15); border-color: var(--purple); color: #a09ae0; }
+  .type-opt.sel-rehearsal { background: rgba(29,158,117,0.15); border-color: var(--teal); color: #60c4a0; }
+  .type-opt.sel-other { background: var(--bg4); border-color: var(--border2); color: var(--text); }
+  /* contacts */
+  .contacts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 14px; }
+  .contact-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; cursor: pointer; transition: border-color .15s; }
+  .contact-card:hover { border-color: var(--border2); }
+  .contact-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+  .contact-name { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+  .contact-type { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+  .contact-detail { font-size: 12px; color: var(--text2); margin-bottom: 3px; display: flex; align-items: center; gap: 6px; }
+  .contact-detail span.icon { color: var(--text3); width: 14px; text-align: center; }
+  /* gcal modal */
+  .gcal-setup { text-align: center; padding: 10px 0; }
+  .gcal-logo { font-size: 48px; margin-bottom: 16px; }
+  .gcal-setup h3 { font-family: var(--font-display); font-size: 22px; margin-bottom: 8px; }
+  .gcal-setup p { font-size: 13px; color: var(--text2); line-height: 1.7; margin-bottom: 20px; }
+  .gcal-step { display: flex; gap: 12px; text-align: left; background: var(--bg3); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px; }
+  .gcal-step-num { width: 22px; height: 22px; border-radius: 50%; background: var(--coral); color: #fff; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .gcal-step-text { font-size: 12px; color: var(--text2); line-height: 1.6; }
+  .gcal-step-text strong { color: var(--text); }
+  .code-block { background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius); padding: 10px 14px; font-family: monospace; font-size: 12px; color: var(--teal); margin: 8px 0; word-break: break-all; }
+  .input-with-btn { display: flex; gap: 8px; }
+  .input-with-btn .form-input { flex: 1; }
+  /* upcoming */
+  .upcoming-list .gig-row { margin-bottom: 6px; }
+  /* empty state */
+  .empty { text-align: center; padding: 60px 20px; color: var(--text3); }
+  .empty-icon { font-size: 40px; margin-bottom: 14px; opacity: .5; }
+  .empty-text { font-size: 14px; margin-bottom: 16px; }
+  /* page header */
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
+  .page-title { font-family: var(--font-display); font-size: 28px; color: var(--text); }
+  .page-sub { font-size: 13px; color: var(--text3); margin-top: 3px; }
+  /* nav controls */
+  .nav-controls { display: flex; align-items: center; gap: 8px; }
+  .icon-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border2); background: transparent; color: var(--text2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all .15s; }
+  .icon-btn:hover { background: var(--bg3); color: var(--text); }
+  /* month label */
+  .month-label { font-size: 14px; font-weight: 500; min-width: 160px; text-align: center; color: var(--text); }
+  /* legend */
+  .legend { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+  /* view toggle */
+  .view-toggle { display: flex; border: 1px solid var(--border2); border-radius: var(--radius); overflow: hidden; }
+  .view-btn { background: none; border: none; padding: 6px 14px; font-size: 12px; cursor: pointer; font-family: var(--font); color: var(--text2); transition: all .15s; }
+  .view-btn.active { background: var(--bg3); color: var(--text); font-weight: 500; }
+  /* search */
+  .search-input { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 7px 12px 7px 32px; font-size: 13px; color: var(--text); font-family: var(--font); outline: none; width: 220px; transition: border-color .15s; }
+  .search-input:focus { border-color: var(--border2); width: 260px; }
+  .search-wrap { position: relative; }
+  .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 14px; }
+  /* tag colors for contacts */
+  .tag-venue { --tc: #D85A30; }
+  .tag-promoter { --tc: #534AB7; }
+  .tag-manager { --tc: #1D9E75; }
+  .tag-agent { --tc: #BA7517; }
+  .tag-other { --tc: #888780; }
+  /* band members */
+  .band-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 14px; margin-bottom: 32px; }
+  .member-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; cursor: pointer; transition: border-color .15s; text-align: center; }
+  .member-card:hover { border-color: var(--border2); }
+  .member-card.add-card { border-style: dashed; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 160px; color: var(--text3); }
+  .member-card.add-card:hover { color: var(--text2); border-color: var(--border2); }
+  .member-avatar-lg { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 600; margin: 0 auto 12px; }
+  .member-name { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+  .member-instrument { font-size: 12px; color: var(--text3); margin-bottom: 10px; text-transform: uppercase; letter-spacing: .5px; }
+  .member-gig-count { font-size: 11px; color: var(--text2); margin-top: 8px; }
+  .roster-section { margin-top: 8px; }
+  .roster-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 6px; }
+  .roster-date { font-size: 11px; color: var(--text3); min-width: 52px; text-align: center; }
+  .roster-name { font-size: 13px; font-weight: 500; color: var(--text); min-width: 180px; flex-shrink: 0; }
+  .roster-avatars { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
+  .roster-avatar { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; border: 1.5px solid var(--bg2); flex-shrink: 0; }
+  .roster-empty { font-size: 11px; color: var(--text3); font-style: italic; }
+  .member-check-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius); background: var(--bg3); margin-bottom: 6px; cursor: pointer; transition: background .12s; }
+  .member-check-row:hover { background: var(--bg4); }
+  .member-check-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+  /* animations */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .fade-in { animation: fadeIn .25s ease both; }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(16px) scale(.98); } to { opacity: 1; transform: none; } }
+  .modal { animation: slideUp .2s ease both; }
+  /* responsive */
+  @media (max-width: 900px) { .stats-row { grid-template-columns: repeat(2,1fr); } }
+  @media (max-width: 640px) { .sidebar { display: none; } .main { margin-left: 0; } .stats-row { grid-template-columns: repeat(2,1fr); } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ─── helpers ────────────────────────────────────────────────────────────────
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const TODAY = new Date();
+const pad = n => String(n).padStart(2,'0');
+const fmtDate = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const fmtTime = t => { if(!t) return ''; const [h,m]=t.split(':'); const hr=parseInt(h); return `${hr%12||12}:${m}${hr<12?'am':'pm'}`; };
+const fmtMonDay = ds => { const d=new Date(ds+'T00:00:00'); return `${MONTHS[d.getMonth()].slice(0,3)} ${d.getDate()}`; };
+const initials = n => n.split(' ').slice(0,2).map(w=>w[0]?.toUpperCase()||'').join('');
+const AVATAR_COLORS = ['#D85A30','#534AB7','#1D9E75','#BA7517','#885577'];
+const avatarColor = n => AVATAR_COLORS[n.charCodeAt(0)%AVATAR_COLORS.length];
+
+// ─── localStorage ──────────────────────────────────────────────────────────
+const LS = {
+  get: (k,d) => { try { const v=localStorage.getItem(k); return v?JSON.parse(v):d; } catch { return d; } },
+  set: (k,v) => { try { localStorage.setItem(k,JSON.stringify(v)); } catch {} },
+};
+
+// ─── SEED DATA ──────────────────────────────────────────────────────────────
+const SEED_GIGS = [
+  {id:1,name:'Blue Note Jazz Set',type:'public',date:'2026-05-02',time:'21:00',venue:'Blue Note NYC',pay:'$350',notes:'Bring Rhodes',contactId:1},
+  {id:2,name:'Corporate Gala',type:'private',date:'2026-05-09',time:'19:30',venue:'Four Seasons Ballroom',pay:'$800',notes:'Smart dress',contactId:2},
+  {id:3,name:'Band Rehearsal',type:'rehearsal',date:'2026-05-14',time:'14:00',venue:'Studio B',pay:'',notes:'Work on new material',contactId:null},
+  {id:4,name:'Rooftop Sessions',type:'public',date:'2026-05-17',time:'18:00',venue:'230 Fifth NYC',pay:'$200',notes:'Sunset set',contactId:null},
+  {id:5,name:'Wedding Reception',type:'private',date:'2026-05-23',time:'17:00',venue:'The Plaza Hotel',pay:'$1,200',notes:'Ceremony + reception',contactId:3},
+  {id:6,name:'Open Mic Night',type:'public',date:'2026-05-28',time:'20:00',venue:'Sofar Sounds',pay:'',notes:'30 min slot',contactId:null},
+  {id:7,name:'Studio Session',type:'rehearsal',date:'2026-05-31',time:'10:00',venue:'Avatar Studios',pay:'',notes:'Record demos',contactId:null},
+  {id:8,name:'Charity Concert',type:'public',date:'2026-06-05',time:'19:00',venue:'Town Hall NYC',pay:'TBD',notes:'',contactId:1},
+  {id:9,name:'Private Party',type:'private',date:'2026-06-12',time:'21:00',venue:'Upper East Side',pay:'$600',notes:'NDA signed',contactId:2},
+];
+const SEED_CONTACTS = [
+  {id:1,name:'Marcus Chen',role:'venue',company:'Blue Note NYC',email:'marcus@bluenote.com',phone:'212-555-0182',notes:'Best contact for jazz nights. Book 6 weeks out.'},
+  {id:2,name:'Priya Sharma',role:'promoter',company:'Elevation Events',email:'priya@elevationevents.com',phone:'646-555-0291',notes:'Corporate & private events specialist.'},
+  {id:3,name:'James Whitfield',role:'agent',company:'JW Talent Agency',email:'james@jwtalent.com',phone:'917-555-0444',notes:'10% commission. Handles all wedding inquiries.'},
+  {id:4,name:'Sofia Torres',role:'manager',company:'Self',email:'sofia.t.music@gmail.com',phone:'718-555-0337',notes:'Studio booking contact at Avatar.'},
+];
+
+const SEED_MEMBERS = [
+  {id:1,name:'Adam David',instrument:'Keys / Vocals',email:'adam@adamdavid.com',phone:'',notes:'Bandleader',color:'#D85A30'},
+  {id:2,name:'Rico James',instrument:'Bass',email:'rico@email.com',phone:'',notes:'',color:'#534AB7'},
+  {id:3,name:'Layla Moon',instrument:'Drums',email:'layla@email.com',phone:'',notes:'',color:'#1D9E75'},
+  {id:4,name:'Theo Park',instrument:'Guitar',email:'theo@email.com',phone:'',notes:'',color:'#BA7517'},
+];
+const MEMBER_COLORS = ['#D85A30','#534AB7','#1D9E75','#BA7517','#885577','#1D6E9E','#9E1D5F'];
+
+// ─── Icon components ─────────────────────────────────────────────────────────
+const Icon = ({name, style}) => <span style={{fontStyle:'normal',...style}}>
+  {name==='calendar'?'📅':name==='music'?'🎵':name==='contacts'?'👥':name==='settings'?'⚙️':
+   name==='plus'?'＋':name==='close'?'✕':name==='left'?'‹':name==='right'?'›':
+   name==='edit'?'✎':name==='trash'?'⌫':name==='sync'?'⟳':name==='search'?'⌕':
+   name==='phone'?'📞':name==='mail'?'✉':name==='building'?'🏢':name==='note'?'📝':
+   name==='link'?'🔗':name==='check'?'✓':name==='dollar'?'$':name==='clock'?'🕐':'●'}
+</span>;
+
+// ─── GIG FORM MODAL ──────────────────────────────────────────────────────────
+function GigModal({ gig, contacts, members, onSave, onDelete, onClose, gcalConnected, defaultDate }) {
+  const [form, setForm] = useState(gig ? {...gig} : {
+    name:'', type:'public', date: defaultDate||fmtDate(TODAY), time:'20:00',
+    venue:'', pay:'', notes:'', contactId:null, memberIds:[],
+  });
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+  const toggleMember = id => set('memberIds', (form.memberIds||[]).includes(id) ? (form.memberIds||[]).filter(x=>x!==id) : [...(form.memberIds||[]),id]);
+
+  return (
+    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal">
+        <div className="modal-title">
+          <span>{gig ? 'Edit gig' : 'Add gig'}</span>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Event name</label>
+          <input className="form-input" value={form.name} onChange={e=>set('name',e.target.value)} placeholder="e.g. Blue Note Friday Night" autoFocus />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Type</label>
+          <div className="type-opts">
+            {['public','private','rehearsal','other'].map(t=>(
+              <div key={t} className={`type-opt${form.type===t?' sel-'+t:''}`} onClick={()=>set('type',t)}>{t.charAt(0).toUpperCase()+t.slice(1)}</div>
+            ))}
+          </div>
+        </div>
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">Date</label>
+            <input className="form-input" type="date" value={form.date} onChange={e=>set('date',e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Time</label>
+            <input className="form-input" type="time" value={form.time} onChange={e=>set('time',e.target.value)} />
+          </div>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Venue / Location</label>
+          <input className="form-input" value={form.venue} onChange={e=>set('venue',e.target.value)} placeholder="e.g. The Blue Note, NYC" />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Pay / Fee</label>
+          <input className="form-input" value={form.pay} onChange={e=>set('pay',e.target.value)} placeholder="e.g. $250 or TBD" />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Contact</label>
+          <select className="form-input" value={form.contactId||''} onChange={e=>set('contactId',e.target.value?parseInt(e.target.value):null)}>
+            <option value="">— None —</option>
+            {contacts.map(c=><option key={c.id} value={c.id}>{c.name} ({c.company||c.role})</option>)}
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Band members on this gig</label>
+          {members.length===0 ? <div style={{fontSize:12,color:'var(--text3)'}}>Add members in the Band tab first.</div> :
+            members.map(m=>{
+              const sel = (form.memberIds||[]).includes(m.id);
+              return (
+                <div key={m.id} className="member-check-row" onClick={()=>toggleMember(m.id)}>
+                  <div className="member-check-avatar" style={{background:m.color+'33',color:m.color}}>{initials(m.name)}</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,color:'var(--text)',fontWeight:500}}>{m.name}</div>
+                    <div style={{fontSize:11,color:'var(--text3)'}}>{m.instrument}</div>
+                  </div>
+                  <div style={{width:18,height:18,borderRadius:4,border:`1.5px solid ${sel?m.color:'var(--border2)'}`,background:sel?m.color+'22':'transparent',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,color:m.color}}>{sel?'✓':''}</div>
+                </div>
+              );
+            })
+          }
+        </div>
+        <div className="form-group">
+          <label className="form-label">Notes</label>
+          <textarea className="form-input" value={form.notes} onChange={e=>set('notes',e.target.value)} placeholder="Set list, load-in time, contacts…" />
+        </div>
+        {gcalConnected && (
+          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14,fontSize:12,color:'var(--text2)'}}>
+            <input type="checkbox" id="gcal-sync" checked={form.type==='public'} readOnly />
+            <label htmlFor="gcal-sync" style={{cursor:'default'}}>
+              {form.type==='public' ? '✓ Will sync to Google Calendar (public events only)' : 'Private — will not sync to Google Calendar'}
+            </label>
+          </div>
+        )}
+        <div style={{display:'flex',gap:8,marginTop:4}}>
+          <button className="btn btn-primary" style={{flex:1}} onClick={()=>{if(!form.name.trim())return;onSave(form);}}>Save gig</button>
+          {gig && <button className="btn btn-danger" onClick={()=>onDelete(gig.id)}>Delete</button>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── CONTACT MODAL ───────────────────────────────────────────────────────────
+function ContactModal({ contact, onSave, onDelete, onClose }) {
+  const [form, setForm] = useState(contact ? {...contact} : { name:'', role:'venue', company:'', email:'', phone:'', notes:'' });
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+
+  return (
+    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal">
+        <div className="modal-title">
+          <span>{contact ? 'Edit contact' : 'Add contact'}</span>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Name</label>
+          <input className="form-input" value={form.name} onChange={e=>set('name',e.target.value)} placeholder="e.g. Marcus Chen" autoFocus />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Role</label>
+          <select className="form-input" value={form.role} onChange={e=>set('role',e.target.value)}>
+            <option value="venue">Venue</option>
+            <option value="promoter">Promoter</option>
+            <option value="manager">Manager</option>
+            <option value="agent">Agent</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Company / Venue</label>
+          <input className="form-input" value={form.company} onChange={e=>set('company',e.target.value)} placeholder="e.g. Blue Note NYC" />
+        </div>
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">Email</label>
+            <input className="form-input" type="email" value={form.email} onChange={e=>set('email',e.target.value)} placeholder="name@example.com" />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Phone</label>
+            <input className="form-input" type="tel" value={form.phone} onChange={e=>set('phone',e.target.value)} placeholder="212-555-0100" />
+          </div>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Notes</label>
+          <textarea className="form-input" value={form.notes} onChange={e=>set('notes',e.target.value)} placeholder="Booking lead time, preferences, commission…" />
+        </div>
+        <div style={{display:'flex',gap:8,marginTop:4}}>
+          <button className="btn btn-primary" style={{flex:1}} onClick={()=>{if(!form.name.trim())return;onSave(form);}}>Save contact</button>
+          {contact && <button className="btn btn-danger" onClick={()=>onDelete(contact.id)}>Delete</button>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── MEMBER MODAL ─────────────────────────────────────────────────────────────
+function MemberModal({ member, onSave, onDelete, onClose }) {
+  const [form, setForm] = useState(member ? {...member} : { name:'', instrument:'', email:'', phone:'', notes:'', color: MEMBER_COLORS[Math.floor(Math.random()*MEMBER_COLORS.length)] });
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+
+  return (
+    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal">
+        <div className="modal-title">
+          <span>{member ? 'Edit member' : 'Add band member'}</span>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div style={{display:'flex',justifyContent:'center',marginBottom:20}}>
+          <div className="member-avatar-lg" style={{background:form.color+'33',color:form.color,width:64,height:64,fontSize:24}}>{initials(form.name)||'?'}</div>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Name</label>
+          <input className="form-input" value={form.name} onChange={e=>set('name',e.target.value)} placeholder="e.g. Rico James" autoFocus />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Instrument / Role</label>
+          <input className="form-input" value={form.instrument} onChange={e=>set('instrument',e.target.value)} placeholder="e.g. Bass, Drums, Vocals…" />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Color</label>
+          <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+            {MEMBER_COLORS.map(c=>(
+              <div key={c} onClick={()=>set('color',c)} style={{width:28,height:28,borderRadius:'50%',background:c,cursor:'pointer',border:form.color===c?`3px solid white`:'3px solid transparent',boxSizing:'border-box',transition:'border .12s'}} />
+            ))}
+          </div>
+        </div>
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">Email</label>
+            <input className="form-input" type="email" value={form.email} onChange={e=>set('email',e.target.value)} placeholder="name@email.com" />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Phone</label>
+            <input className="form-input" type="tel" value={form.phone} onChange={e=>set('phone',e.target.value)} placeholder="555-0100" />
+          </div>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Notes</label>
+          <textarea className="form-input" value={form.notes} onChange={e=>set('notes',e.target.value)} placeholder="Anything relevant…" />
+        </div>
+        <div style={{display:'flex',gap:8,marginTop:4}}>
+          <button className="btn btn-primary" style={{flex:1}} onClick={()=>{if(!form.name.trim())return;onSave(form);}}>Save member</button>
+          {member && <button className="btn btn-danger" onClick={()=>onDelete(member.id)}>Remove</button>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── BAND VIEW ────────────────────────────────────────────────────────────────
+function BandView({ members, gigs, onAdd, onEdit }) {
+  const upcomingGigs = gigs
+    .filter(g=>new Date(g.date+'T00:00:00')>=new Date(fmtDate(TODAY)))
+    .sort((a,b)=>a.date.localeCompare(b.date))
+    .slice(0,12);
+
+  const gigCountForMember = id => gigs.filter(g=>(g.memberIds||[]).includes(id)).length;
+
+  return (
+    <div className="fade-in">
+      <div className="page-header">
+        <div>
+          <div className="page-title">Band</div>
+          <div className="page-sub">Roster &amp; gig assignments</div>
+        </div>
+        <button className="btn btn-primary btn-sm" onClick={onAdd}>＋ Add member</button>
+      </div>
+
+      <div className="band-grid">
+        {members.map(m=>(
+          <div key={m.id} className="member-card" onClick={()=>onEdit(m)}>
+            <div className="member-avatar-lg" style={{background:m.color+'33',color:m.color}}>{initials(m.name)}</div>
+            <div className="member-name">{m.name}</div>
+            <div className="member-instrument">{m.instrument||'—'}</div>
+            {m.email && <div style={{fontSize:11,color:'var(--text3)',marginBottom:3}}>✉ {m.email}</div>}
+            {m.notes && <div style={{fontSize:11,color:'var(--text3)',fontStyle:'italic',marginTop:4}}>{m.notes}</div>}
+            <div className="member-gig-count" style={{color:m.color}}>
+              {gigCountForMember(m.id)} gig{gigCountForMember(m.id)!==1?'s':''} assigned
+            </div>
+          </div>
+        ))}
+        <div className="member-card add-card" onClick={onAdd}>
+          <div style={{fontSize:28,marginBottom:8}}>＋</div>
+          <div style={{fontSize:13}}>Add member</div>
+        </div>
+      </div>
+
+      {members.length>0 && (
+        <>
+          <div style={{fontSize:13,fontWeight:500,color:'var(--text)',marginBottom:14}}>
+            Upcoming gig roster
+            <span style={{fontSize:11,color:'var(--text3)',fontWeight:400,marginLeft:8}}>assign members when editing a gig</span>
+          </div>
+          {upcomingGigs.length===0 ? (
+            <div className="empty"><div className="empty-icon">📋</div><div className="empty-text">No upcoming gigs yet.</div></div>
+          ) : (
+            <div className="roster-section">
+              {upcomingGigs.map(g=>{
+                const d=new Date(g.date+'T00:00:00');
+                const assignedMembers = members.filter(m=>(g.memberIds||[]).includes(m.id));
+                return (
+                  <div key={g.id} className="roster-row">
+                    <div className="roster-date">
+                      <div style={{fontSize:10,color:'var(--text3)',textTransform:'uppercase'}}>{MONTHS[d.getMonth()].slice(0,3)}</div>
+                      <div style={{fontSize:16,fontWeight:300,fontFamily:'var(--font-display)',color:'var(--text)'}}>{d.getDate()}</div>
+                    </div>
+                    <div style={{flex:'0 0 auto',maxWidth:200}}>
+                      <div className="roster-name" style={{maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{g.name}</div>
+                      <div style={{fontSize:11,color:'var(--text3)'}}>{g.venue||'No venue'}</div>
+                    </div>
+                    <div className="roster-avatars">
+                      {assignedMembers.length===0
+                        ? <span className="roster-empty">No members assigned</span>
+                        : assignedMembers.map(m=>(
+                          <div key={m.id} className="roster-avatar" style={{background:m.color+'33',color:m.color}} title={m.name}>{initials(m.name)}</div>
+                        ))
+                      }
+                    </div>
+                    <span className={`badge ${g.type}`} style={{flexShrink:0}}>{g.type}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── GCAL MODAL ──────────────────────────────────────────────────────────────
+function GCalModal({ onClose, onConnected, onDisconnect, connected, clientId, setClientId }) {
+  const [step, setStep] = useState(connected ? 'connected' : clientId ? 'authorize' : 'setup');
+  const [localId, setLocalId] = useState(clientId||'');
+
+  const handleAuthorize = () => {
+    const id = localId.trim();
+    if(!id) { alert('Please enter your Google Client ID first.'); return; }
+    setClientId(id);
+    const redirectUri = window.location.origin + (window.location.pathname === '/' ? '' : window.location.pathname);
+    const scope = 'https://www.googleapis.com/auth/calendar.events';
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(id)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}&prompt=consent`;
+    window.location.href = url;
+  };
+
+  if(step==='connected') return (
+    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal">
+        <div className="modal-title"><span>Google Calendar</span><button className="modal-close" onClick={onClose}>✕</button></div>
+        <div style={{textAlign:'center',padding:'10px 0 20px'}}>
+          <div style={{fontSize:48,marginBottom:12}}>✅</div>
+          <div style={{fontSize:16,fontWeight:500,marginBottom:8,color:'var(--text)'}}>Connected!</div>
+          <p style={{fontSize:13,color:'var(--text2)',marginBottom:20}}>Public gigs will automatically sync to your Google Calendar. Private events stay local only.</p>
+          <button className="btn btn-danger" onClick={onDisconnect}>Disconnect Google Calendar</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal">
+        <div className="modal-title"><span>Connect Google Calendar</span><button className="modal-close" onClick={onClose}>✕</button></div>
+        <div className="gcal-setup">
+          <div className="gcal-logo">📅</div>
+          <h3>Real Google Calendar sync</h3>
+          <p>Public gigs sync automatically. Private events and rehearsals never leave this app.</p>
+        </div>
+        <div className="gcal-step">
+          <div className="gcal-step-num">1</div>
+          <div className="gcal-step-text"><strong>Create a Google Cloud project</strong><br/>Go to <a href="https://console.cloud.google.com" target="_blank" style={{color:'var(--coral)'}}>console.cloud.google.com</a>, create a project, enable the <strong>Google Calendar API</strong>, and create an <strong>OAuth 2.0 Client ID</strong> (type: Web application).</div>
+        </div>
+        <div className="gcal-step">
+          <div className="gcal-step-num">2</div>
+          <div className="gcal-step-text"><strong>Add your app URL as an authorized redirect URI</strong><br/>In the OAuth client settings, add this exact URL:
+            <div className="code-block">{window.location.href.split('?')[0]}</div>
+          </div>
+        </div>
+        <div className="gcal-step">
+          <div className="gcal-step-num">3</div>
+          <div className="gcal-step-text"><strong>Paste your Client ID below and authorize</strong></div>
+        </div>
+        <div className="form-group" style={{marginTop:12}}>
+          <label className="form-label">Google OAuth Client ID</label>
+          <input className="form-input" value={localId} onChange={e=>setLocalId(e.target.value)} placeholder="xxxx.apps.googleusercontent.com" />
+        </div>
+        <button className="btn btn-primary" style={{width:'100%'}} onClick={handleAuthorize}>
+          Authorize with Google →
+        </button>
+        <p style={{fontSize:11,color:'var(--text3)',marginTop:12,textAlign:'center'}}>You'll be redirected to Google to grant calendar access. Your token is stored locally only.</p>
+      </div>
+    </div>
+  );
+}
+
+// ─── CALENDAR VIEW ────────────────────────────────────────────────────────────
+function CalendarView({ gigs, contacts, gcalConnected, onAdd, onEdit }) {
+  const [year, setYear] = useState(TODAY.getFullYear());
+  const [month, setMonth] = useState(TODAY.getMonth());
+  const [calView, setCalView] = useState('month');
+
+  const changeMonth = d => {
+    let m=month+d, y=year;
+    if(m>11){m=0;y++;} if(m<0){m=11;y--;}
+    setMonth(m); setYear(y);
+  };
+
+  const monthGigs = gigs.filter(g=>{ const d=new Date(g.date+'T00:00:00'); return d.getFullYear()===year&&d.getMonth()===month; });
+  const totals = {
+    total: monthGigs.length,
+    public: monthGigs.filter(g=>g.type==='public').length,
+    private: monthGigs.filter(g=>g.type==='private').length,
+    rehearsal: monthGigs.filter(g=>g.type==='rehearsal').length,
+  };
+
+  const upcomingGigs = gigs.filter(g=>new Date(g.date+'T00:00:00')>=new Date(fmtDate(TODAY))).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,8);
+
+  return (
+    <div className="fade-in">
+      <div className="page-header">
+        <div>
+          <div className="page-title">Calendar</div>
+          <div className="page-sub">Manage your gigs, sessions & events</div>
+        </div>
+        <div style={{display:'flex',gap:8,alignItems:'center'}}>
+          <div className="view-toggle">
+            <button className={`view-btn${calView==='month'?' active':''}`} onClick={()=>setCalView('month')}>Month</button>
+            <button className={`view-btn${calView==='upcoming'?' active':''}`} onClick={()=>setCalView('upcoming')}>Upcoming</button>
+          </div>
+          <button className="btn btn-primary btn-sm" onClick={()=>onAdd()}>＋ Add gig</button>
+        </div>
+      </div>
+
+      <div className="stats-row">
+        <div className="stat-card"><div className="stat-label">This month</div><div className="stat-val">{totals.total}</div><div className="stat-sub">total events</div></div>
+        <div className="stat-card"><div className="stat-label">Public</div><div className="stat-val coral">{totals.public}</div><div className="stat-sub">shows</div></div>
+        <div className="stat-card"><div className="stat-label">Private</div><div className="stat-val purple">{totals.private}</div><div className="stat-sub">events</div></div>
+        <div className="stat-card"><div className="stat-label">Rehearsals</div><div className="stat-val teal">{totals.rehearsal}</div><div className="stat-sub">sessions</div></div>
+      </div>
+
+      {calView==='month' ? (
+        <>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+            <div style={{display:'flex',alignItems:'center',gap:8}}>
+              <button className="icon-btn" onClick={()=>changeMonth(-1)}>‹</button>
+              <span className="month-label">{MONTHS[month]} {year}</span>
+              <button className="icon-btn" onClick={()=>changeMonth(1)}>›</button>
+              <button className="icon-btn btn-sm" style={{width:'auto',padding:'0 10px',fontSize:11}} onClick={()=>{setYear(TODAY.getFullYear());setMonth(TODAY.getMonth());}}>Today</button>
+            </div>
+            <div className="legend">
+              <div className="legend-item"><div className="legend-dot" style={{background:'var(--coral)'}}></div>Public</div>
+              <div className="legend-item"><div className="legend-dot" style={{background:'var(--purple)'}}></div>Private</div>
+              <div className="legend-item"><div className="legend-dot" style={{background:'var(--teal)'}}></div>Rehearsal</div>
+              {gcalConnected && <div className="legend-item" style={{color:'var(--teal)'}}><span style={{fontSize:10}}>⟳</span>GCal synced</div>}
+            </div>
+          </div>
+          <CalGrid year={year} month={month} gigs={gigs} gcalConnected={gcalConnected} onAdd={onAdd} onEdit={onEdit} />
+        </>
+      ) : (
+        <div>
+          <div style={{marginBottom:14,fontSize:13,color:'var(--text2)'}}>Next {upcomingGigs.length} gigs</div>
+          {upcomingGigs.length===0 ? (
+            <div className="empty"><div className="empty-icon">🎸</div><div className="empty-text">No upcoming gigs. Time to book some!</div><button className="btn btn-primary" onClick={()=>onAdd()}>＋ Add first gig</button></div>
+          ) : upcomingGigs.map(g=>(
+            <GigRow key={g.id} gig={g} contacts={contacts} gcalConnected={gcalConnected} onClick={()=>onEdit(g)} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CalGrid({ year, month, gigs, gcalConnected, onAdd, onEdit }) {
+  const first = new Date(year,month,1);
+  const last = new Date(year,month+1,0);
+  const startDay = first.getDay();
+  const todayStr = fmtDate(TODAY);
+
+  const cells = [];
+  for(let i=0;i<startDay;i++) {
+    const d=new Date(year,month,1-startDay+i);
+    cells.push({date:fmtDate(d),otherMonth:true,day:d.getDate()});
+  }
+  for(let d=1;d<=last.getDate();d++) cells.push({date:`${year}-${pad(month+1)}-${pad(d)}`,otherMonth:false,day:d});
+  const rem=(7-(startDay+last.getDate())%7)%7;
+  for(let i=1;i<=rem;i++) cells.push({date:fmtDate(new Date(year,month+1,i)),otherMonth:true,day:i});
+
+  return (
+    <div className="cal-grid">
+      {DAYS.map(d=><div key={d} className="cal-dayhead">{d}</div>)}
+      {cells.map(({date,otherMonth,day})=>{
+        const dayGigs = gigs.filter(g=>g.date===date).sort((a,b)=>a.time.localeCompare(b.time));
+        const isToday = date===todayStr;
+        return (
+          <div key={date} className={`cal-cell${otherMonth?' other-month':''}${isToday?' today':''}`} onClick={()=>onAdd(date)}>
+            <div className="day-num">{day}</div>
+            {dayGigs.slice(0,3).map(g=>(
+              <div key={g.id} className={`gig-chip ${g.type}`} onClick={e=>{e.stopPropagation();onEdit(g);}} title={g.name}>
+                {gcalConnected&&g.type==='public'?'⟳ ':''}{g.name}
+              </div>
+            ))}
+            {dayGigs.length>3 && <div className="more-chip">+{dayGigs.length-3} more</div>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function GigRow({ gig, contacts, gcalConnected, onClick }) {
+  const contact = contacts.find(c=>c.id===gig.contactId);
+  const d = new Date(gig.date+'T00:00:00');
+  return (
+    <div className="gig-row" onClick={onClick}>
+      <div className="gig-date-box">
+        <div className="gig-date-mon">{MONTHS[d.getMonth()].slice(0,3)}</div>
+        <div className="gig-date-day">{d.getDate()}</div>
+      </div>
+      <div className="gig-row-info">
+        <div className="gig-row-name">{gig.name}</div>
+        <div className="gig-row-venue">{gig.venue||'No venue'}{gig.time ? ` · ${fmtTime(gig.time)}` : ''}</div>
+        <div className="gig-row-meta">
+          <span className={`badge ${gig.type}`}>{gig.type}</span>
+          {gig.pay && <span className="gig-pay">{gig.pay}</span>}
+          {contact && <span style={{fontSize:11,color:'var(--text3)'}}>📋 {contact.name}</span>}
+          {gcalConnected && gig.type==='public' && <span className="sync-badge">⟳ synced</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── CONTACTS VIEW ────────────────────────────────────────────────────────────
+function ContactsView({ contacts, gigs, onAdd, onEdit }) {
+  const [search, setSearch] = useState('');
+  const [filterRole, setFilterRole] = useState('all');
+
+  const filtered = contacts.filter(c=>{
+    const q=search.toLowerCase();
+    const match = !q || c.name.toLowerCase().includes(q)||c.company?.toLowerCase().includes(q)||c.email?.toLowerCase().includes(q);
+    const roleMatch = filterRole==='all'||c.role===filterRole;
+    return match && roleMatch;
+  });
+
+  const gigCount = id => gigs.filter(g=>g.contactId===id).length;
+
+  return (
+    <div className="fade-in">
+      <div className="page-header">
+        <div>
+          <div className="page-title">Contacts</div>
+          <div className="page-sub">Venues, promoters, agents & managers</div>
+        </div>
+        <button className="btn btn-primary btn-sm" onClick={onAdd}>＋ Add contact</button>
+      </div>
+
+      <div style={{display:'flex',gap:10,marginBottom:20,flexWrap:'wrap'}}>
+        <div className="search-wrap">
+          <span className="search-icon">⌕</span>
+          <input className="search-input" placeholder="Search contacts…" value={search} onChange={e=>setSearch(e.target.value)} />
+        </div>
+        <div className="view-toggle">
+          {['all','venue','promoter','manager','agent','other'].map(r=>(
+            <button key={r} className={`view-btn${filterRole===r?' active':''}`} onClick={()=>setFilterRole(r)}>
+              {r.charAt(0).toUpperCase()+r.slice(1)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {filtered.length===0 ? (
+        <div className="empty"><div className="empty-icon">👥</div><div className="empty-text">No contacts found.</div><button className="btn btn-primary" onClick={onAdd}>＋ Add first contact</button></div>
+      ) : (
+        <div className="contacts-grid">
+          {filtered.map(c=>(
+            <div key={c.id} className="contact-card" onClick={()=>onEdit(c)}>
+              <div className="contact-avatar" style={{background:avatarColor(c.name)+'22',color:avatarColor(c.name)}}>{initials(c.name)}</div>
+              <div className="contact-name">{c.name}</div>
+              <div className="contact-type">{c.role} {c.company ? `· ${c.company}` : ''}</div>
+              {c.email && <div className="contact-detail"><span className="icon">✉</span>{c.email}</div>}
+              {c.phone && <div className="contact-detail"><span className="icon">📞</span>{c.phone}</div>}
+              {c.notes && <div className="contact-detail" style={{marginTop:6,fontSize:11,color:'var(--text3)'}}>{c.notes.slice(0,80)}{c.notes.length>80?'…':''}</div>}
+              {gigCount(c.id)>0 && <div style={{marginTop:10,fontSize:11,color:'var(--teal)'}}>🎵 {gigCount(c.id)} gig{gigCount(c.id)>1?'s':''} booked</div>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── GCAL SYNC ────────────────────────────────────────────────────────────────
+async function pushGigToGCal(gig, token) {
+  try {
+    const start = new Date(`${gig.date}T${gig.time||'00:00'}:00`);
+    const end = new Date(start.getTime() + 2*60*60*1000);
+    const event = {
+      summary: gig.name,
+      location: gig.venue||'',
+      description: `Pay: ${gig.pay||'TBD'}\n${gig.notes||''}\n\nSynced from Adam David's Gigbook`,
+      start: { dateTime: start.toISOString(), timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
+      end: { dateTime: end.toISOString(), timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
+    };
+    const res = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(event),
+    });
+    return res.ok;
+  } catch { return false; }
+}
+
+// ─── APP ──────────────────────────────────────────────────────────────────────
+function App() {
+  const [page, setPage] = useState('calendar');
+  const [gigs, setGigs] = useState(()=>LS.get('gb_gigs', SEED_GIGS));
+  const [contacts, setContacts] = useState(()=>LS.get('gb_contacts', SEED_CONTACTS));
+  const [members, setMembers] = useState(()=>LS.get('gb_members', SEED_MEMBERS));
+  const [gcalToken, setGcalToken] = useState(()=>LS.get('gb_gcal_token',''));
+  const [gcalClientId, setGcalClientId] = useState(()=>LS.get('gb_gcal_client_id',''));
+  const [gigModal, setGigModal] = useState(null);
+  const [contactModal, setContactModal] = useState(null);
+  const [memberModal, setMemberModal] = useState(null);
+  const [gcalModal, setGcalModal] = useState(false);
+  const [syncMsg, setSyncMsg] = useState('');
+  const nextGigId = useRef(Math.max(0,...gigs.map(g=>g.id))+1);
+  const nextContactId = useRef(Math.max(0,...contacts.map(c=>c.id))+1);
+  const nextMemberId = useRef(Math.max(0,...members.map(m=>m.id))+1);
+
+  // Persist
+  useEffect(()=>LS.set('gb_gigs',gigs),[gigs]);
+  useEffect(()=>LS.set('gb_contacts',contacts),[contacts]);
+  useEffect(()=>LS.set('gb_members',members),[members]);
+  useEffect(()=>{ if(gcalToken) LS.set('gb_gcal_token',gcalToken); },[gcalToken]);
+  useEffect(()=>{ if(gcalClientId) LS.set('gb_gcal_client_id',gcalClientId); },[gcalClientId]);
+
+  // Handle OAuth redirect
+  useEffect(()=>{
+    const hash = window.location.hash;
+    if(hash.includes('access_token=')) {
+      const params = new URLSearchParams(hash.replace('#',''));
+      const token = params.get('access_token');
+      if(token) { setGcalToken(token); LS.set('gb_gcal_token',token); window.location.hash=''; setSyncMsg('Google Calendar connected!'); setTimeout(()=>setSyncMsg(''),3000); }
+    }
+  },[]);
+
+  const gcalConnected = !!gcalToken;
+
+  // Gig CRUD
+  const saveGig = async (form) => {
+    let updated;
+    if(form.id) {
+      updated = gigs.map(g=>g.id===form.id?form:g);
+    } else {
+      const newGig = {...form, id: nextGigId.current++};
+      updated = [...gigs, newGig];
+      if(gcalConnected && newGig.type==='public') {
+        const ok = await pushGigToGCal(newGig, gcalToken);
+        if(ok) setSyncMsg('Synced to Google Calendar!'); else setSyncMsg('GCal sync failed — token may have expired.');
+        setTimeout(()=>setSyncMsg(''),3000);
+      }
+    }
+    setGigs(updated);
+    setGigModal(null);
+  };
+  const deleteGig = id => { setGigs(g=>g.filter(x=>x.id!==id)); setGigModal(null); };
+
+  // Contact CRUD
+  const saveContact = (form) => {
+    if(form.id) { setContacts(c=>c.map(x=>x.id===form.id?form:x)); }
+    else { setContacts(c=>[...c,{...form,id:nextContactId.current++}]); }
+    setContactModal(null);
+  };
+  const deleteContact = id => { setContacts(c=>c.filter(x=>x.id!==id)); setContactModal(null); };
+
+  // Member CRUD
+  const saveMember = (form) => {
+    if(form.id) { setMembers(m=>m.map(x=>x.id===form.id?form:x)); }
+    else { setMembers(m=>[...m,{...form,id:nextMemberId.current++}]); }
+    setMemberModal(null);
+  };
+  const deleteMember = id => { setMembers(m=>m.filter(x=>x.id!==id)); setMemberModal(null); };
+
+  const disconnectGCal = () => { setGcalToken(''); LS.set('gb_gcal_token',''); setGcalModal(false); };
+
+  return (
+    <>
+      <div className="sidebar">
+        <div className="brand">
+          <div className="brand-icon">🎵</div>
+          <div>
+            <div style={{fontFamily:'var(--font-display)',fontSize:16,color:'var(--text)',lineHeight:1.1}}>Adam David</div>
+            <div style={{fontSize:11,color:'var(--text3)',letterSpacing:'.5px',textTransform:'uppercase',marginTop:2}}>Gigbook</div>
+          </div>
+        </div>
+        <div className="nav-section">Workspace</div>
+        <div className={`nav-item${page==='calendar'?' active':''}`} onClick={()=>setPage('calendar')}>
+          <span className="nav-icon">📅</span> Calendar
+        </div>
+        <div className={`nav-item${page==='band'?' active':''}`} onClick={()=>setPage('band')}>
+          <span className="nav-icon">🎸</span> Band
+        </div>
+        <div className={`nav-item${page==='contacts'?' active':''}`} onClick={()=>setPage('contacts')}>
+          <span className="nav-icon">👥</span> Contacts
+        </div>
+        <div className="gcal-status">
+          {syncMsg && <div style={{fontSize:11,color:'var(--teal)',marginBottom:8,lineHeight:1.4}}>{syncMsg}</div>}
+          <div className={`gcal-pill${gcalConnected?' connected':''}`} onClick={()=>setGcalModal(true)}>
+            <div className={`dot${gcalConnected?' on':''}`}></div>
+            <span>{gcalConnected ? 'GCal connected' : 'Connect GCal'}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="main">
+        <div className="topbar">
+          <span style={{fontFamily:'var(--font-display)',fontSize:17,color:'var(--text)',marginRight:'auto'}}>
+            {page==='calendar'?'Calendar':page==='band'?'Band':page==='contacts'?'Contacts':''}
+          </span>
+          {page==='calendar' && <button className="btn btn-primary btn-sm" onClick={()=>setGigModal({gig:null,defaultDate:null})}>＋ Add gig</button>}
+          {page==='band' && <button className="btn btn-primary btn-sm" onClick={()=>setMemberModal({})}>＋ Add member</button>}
+          {page==='contacts' && <button className="btn btn-primary btn-sm" onClick={()=>setContactModal({})}>＋ Add contact</button>}
+        </div>
+        <div className="content">
+          {page==='calendar' && (
+            <CalendarView
+              gigs={gigs}
+              contacts={contacts}
+              gcalConnected={gcalConnected}
+              onAdd={(date)=>setGigModal({gig:null,defaultDate:date||null})}
+              onEdit={(gig)=>setGigModal({gig,defaultDate:null})}
+            />
+          )}
+          {page==='band' && (
+            <BandView
+              members={members}
+              gigs={gigs}
+              onAdd={()=>setMemberModal({})}
+              onEdit={(m)=>setMemberModal(m)}
+            />
+          )}
+          {page==='contacts' && (
+            <ContactsView
+              contacts={contacts}
+              gigs={gigs}
+              onAdd={()=>setContactModal({})}
+              onEdit={(c)=>setContactModal(c)}
+            />
+          )}
+        </div>
+      </div>
+
+      {gigModal && (
+        <GigModal
+          gig={gigModal.gig}
+          contacts={contacts}
+          members={members}
+          defaultDate={gigModal.defaultDate}
+          gcalConnected={gcalConnected}
+          onSave={saveGig}
+          onDelete={deleteGig}
+          onClose={()=>setGigModal(null)}
+        />
+      )}
+      {contactModal && (
+        <ContactModal
+          contact={contactModal.id ? contactModal : null}
+          onSave={saveContact}
+          onDelete={deleteContact}
+          onClose={()=>setContactModal(null)}
+        />
+      )}
+      {memberModal && (
+        <MemberModal
+          member={memberModal.id ? memberModal : null}
+          onSave={saveMember}
+          onDelete={deleteMember}
+          onClose={()=>setMemberModal(null)}
+        />
+      )}
+      {gcalModal && (
+        <GCalModal
+          connected={gcalConnected}
+          clientId={gcalClientId}
+          setClientId={id=>{ setGcalClientId(id); LS.set('gb_gcal_client_id',id); }}
+          onConnected={setGcalToken}
+          onDisconnect={disconnectGCal}
+          onClose={()=>setGcalModal(false)}
+        />
+      )}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
